@@ -62,11 +62,36 @@ function gerarFaturaStr (fatura, pecas) {
   faturaStr += `Valor total: ${formatarMoeda(calcularTotalFatura())}\n`;
   faturaStr += `Créditos acumulados: ${calcularTotalCreditos()} \n`;
   return faturaStr;
+}
+
+function gerarFaturaHTML(fatura, pecas) {
+  let html = `<html>\n`;
+  html += `<p> Fatura ${fatura.cliente} </p>\n`;
+  html += `<ul>\n`;
+  
+  let totalFatura = 0;
+  let totalCreditos = 0;
+
+  for (let apre of fatura.apresentacoes) {
+    const peca = getPeca(apre, pecas);
+    const totalApresentacao = calcularTotalApresentacao(apre, pecas);
+    html += `  <li> ${peca.nome}: ${formatarMoeda(totalApresentacao)} (${apre.audiencia} assentos) </li>\n`;
+    totalFatura += totalApresentacao;
+    totalCreditos += calcularCredito(apre);
   }
 
+  html += `</ul>\n`;
+  html += `<p> Valor total: ${formatarMoeda(totalFatura)} </p>\n`;
+  html += `<p> Créditos acumulados: ${totalCreditos} </p>\n`;
+  html += `</html>`;
+  
+  return html;
+}
   
 
 const faturas = JSON.parse(readFileSync('./faturas.json'));
 const pecas = JSON.parse(readFileSync('./pecas.json'));
 const faturaStr = gerarFaturaStr(faturas, pecas);
+const faturaHTML = gerarFaturaHTML(faturas,pecas);
 console.log(faturaStr);
+console.log(faturaHTML);
