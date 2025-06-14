@@ -1,23 +1,8 @@
 const { readFileSync } = require('fs');
 
 function gerarFaturaStr (fatura, pecas) {
-    let totalFatura = 0;
-    let creditos = 0;
-    let faturaStr = `Fatura ${fatura.cliente}\n`;
-  
-    for (let apre of fatura.apresentacoes) {
-      let total = calcularTotalApresentacao(apre);
-      creditos += calcularCredito(apre);
-      // mais uma linha da fatura
-      faturaStr += `  ${getPeca(apre).nome}: ${formatarMoeda(total)} (${apre.audiencia} assentos)\n`;
-      totalFatura += total;
-    }
-    faturaStr += `Valor total: ${formatarMoeda(totalFatura)}\n`;
-    faturaStr += `Créditos acumulados: ${creditos} \n`;
-    return faturaStr;
-  }
 
-  function getPeca(apresentacao){
+    function getPeca(apresentacao){
     return pecas[apresentacao.id];
   }
 
@@ -33,6 +18,21 @@ function gerarFaturaStr (fatura, pecas) {
     if (getPeca(apre).tipo === "comedia")
       creditos += Math.floor(apre.audiencia / 5);
     return creditos;
+  }
+
+  function calcularTotalFatura(){
+    let total = 0;
+    for (let apre of fatura.apresentacoes){
+      total+= calcularTotalApresentacao(apre);
+    }
+    return total;
+  }
+  function calcularTotalCreditos(){
+    let valor = 0;
+    for (let apre of fatura.apresentacoes){
+      valor+= calcularCredito(apre);
+    }
+    return valor;
   }
 
   function calcularTotalApresentacao (apre){
@@ -55,6 +55,16 @@ function gerarFaturaStr (fatura, pecas) {
   throw new Error(`Peça desconhecia: ${getPeca(apre).tipo}`);
   
 }
+    let faturaStr = `Fatura ${fatura.cliente}\n`;
+  for (let apre of fatura.apresentacoes) {
+      faturaStr += `  ${getPeca(apre).nome}: ${formatarMoeda(calcularTotalApresentacao(apre))} (${apre.audiencia} assentos)\n`;
+  }
+  faturaStr += `Valor total: ${formatarMoeda(calcularTotalFatura())}\n`;
+  faturaStr += `Créditos acumulados: ${calcularTotalCreditos()} \n`;
+  return faturaStr;
+  }
+
+  
 
 const faturas = JSON.parse(readFileSync('./faturas.json'));
 const pecas = JSON.parse(readFileSync('./pecas.json'));
